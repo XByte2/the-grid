@@ -251,7 +251,21 @@ Example:
                 // Update all nodes (no arg).
                 } else {
                     Array.from(this.children).forEach(child => {
-                        this._toggleEvents(child, false);
+                        // Allow a custom drag zone. Only childs of draggable elements
+                        if(child.classList !== undefined && child.classList.contains("dragzone")){
+                            this._toggleEvents(child, false);
+                            Array.from(child.childNodes).forEach(childChild => {
+                                if(childChild.classList !== undefined && childChild.classList.contains("dragzone")) {
+                                    this._toggleEvents(childChild, false);
+                                }
+                            })
+                        }else{
+                            Array.from(child.childNodes).forEach(childChild => {
+                                if(childChild.classList !== undefined && childChild.classList.contains("dragzone")) {
+                                    this._toggleEvents(childChild, false);
+                                }
+                            })
+                        }
                     });
                 }
             }
@@ -402,10 +416,15 @@ Example:
                 let player = e.target,
                     state = e.detail.state;
 
-                // Only handle direct children of the grid.
-                if (Polymer.dom(player).parentNode !== this) return;
+                // Only handle direct children of the grid or children of children of the grid.
+                if (Polymer.dom(player).parentNode !== this){
+                    player = Polymer.dom(player).parentNode;
+                    if (Polymer.dom(player).parentNode !== this) {
+                        return;
+                    }
+                }
 
-                // Create a placeholder if not present.
+                // Create a placeholder if not present. DON'T WORK AFTER child dragzone
                 if (!this.placeholder) {
                     this.placeholder = document.createElement('div');
                 }
